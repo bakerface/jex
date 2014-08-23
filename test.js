@@ -128,13 +128,12 @@ describe("#jex.do(environment, expression, input, callback)", function() {
         return callback(null, input / expression.divide);
       },
       lessThan: function(environment, expression, input, callback) {
-        var error = !(input < expression.lessThan);
-        return callback(error, input);
+        return callback(!(input < expression.lessThan));
       }
     };
 
     jex(environment, expression, 1, function(error, output) {
-      should(error).equal(true);
+      should(error).not.be.ok;
       should(output).equal(4525);
       done();
     });

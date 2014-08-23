@@ -26,8 +26,15 @@
         return jex(environment, tasks.shift(), output, next);
       }
       else if (expression.while) {
-        tasks = expression.do.slice(0);
-        return jex(environment, expression.while, output, next);
+        jex(environment, expression.while, output, function(error) {
+          if (error) {
+            return callback(null, output);
+          }
+          else {
+            tasks = expression.do.slice(0);
+            return next(null, output);
+          }
+        });
       }
       else {
         return callback(error, output);
