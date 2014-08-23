@@ -1,0 +1,28 @@
+{
+  "name": "jex",
+  "version": "1.0.0",
+  "description": "Json EXpressions",
+  "main": "jex.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bakerface/jex.git"
+  },
+  "keywords": [
+    "jex",
+    "json",
+    "expressions"
+  ],
+  "author": "Christopher M. Baker",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/bakerface/jex/issues"
+  },
+  "homepage": "https://github.com/bakerface/jex",
+  "devDependencies": {
+    "mocha": "^1.21.4",
+    "should": "^4.0.4"
+  }
+}
