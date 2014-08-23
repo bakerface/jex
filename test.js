@@ -35,7 +35,7 @@ describe("#jex(environment, expression, input, callback)", function() {
   });
 });
 
-describe("#jex.do(expression, input, callback)", function() {
+describe("#jex.do(environment, expression, input, callback)", function() {
   it("should succeed when empty", function(done) {
     var expression = { do: [ ] };
     var environment = { };
