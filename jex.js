@@ -25,6 +25,10 @@
       else if (tasks.length > 0) {
         return jex(environment, tasks.shift(), output, next);
       }
+      else if (expression.while) {
+        tasks = expression.do.slice(0);
+        return jex(environment, expression.while, output, next);
+      }
       else {
         return callback(error, output);
       }

@@ -14,8 +14,9 @@
 }
 ```
 
-<a href="#">#</a> **jex**(*environment, expression, input, callback*) - evaluate *expression* on *input* in *environment*
+[#](#) **jex**(*environment, expression, input, callback*) - evaluate *expression* on *input* in *environment*
 
-<a href="#">#</a> jex.**do**(*environment, expression, input, callback*) - evaluate an ordered list of expressions
+[#](#) jex.**do**(*environment, expression, input, callback*) - evaluate an ordered list of expressions
 
 * *expression.do* - the ordered list of expressions to evaluate
+* *expression.while* - the optional loop condition

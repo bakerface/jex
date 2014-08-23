@@ -105,4 +105,38 @@ describe("#jex.do(environment, expression, input, callback)", function() {
       done();
     });
   });
+
+  it("should repeat until condition fails", function(done) {
+    var expression = {
+      do: [
+        { add: 5 },
+        { multiply: 10 },
+        { divide: 2 }
+      ],
+      while: { lessThan: 1000 }
+    };
+
+    var environment = {
+      do: jex.do,
+      add: function(environment, expression, input, callback) {
+        return callback(null, input + expression.add);
+      },
+      multiply: function(environment, expression, input, callback) {
+        return callback(null, input * expression.multiply);
+      },
+      divide: function(environment, expression, input, callback) {
+        return callback(null, input / expression.divide);
+      },
+      lessThan: function(environment, expression, input, callback) {
+        var error = !(input < expression.lessThan);
+        return callback(error, input);
+      }
+    };
+
+    jex(environment, expression, 1, function(error, output) {
+      should(error).equal(true);
+      should(output).equal(4525);
+      done();
+    });
+  });
 });
