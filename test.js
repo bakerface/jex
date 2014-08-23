@@ -35,6 +35,92 @@ describe("#jex(environment, expression, input, callback)", function() {
   });
 });
 
+describe("#jex.true(environment, expression, input, callback)", function() {
+  it("should succeed", function(done) {
+    jex.true(null, null, "input", function(error, output) {
+      should(error).not.be.ok;
+      should(output).equal("input");
+      done();
+    });
+  });
+});
+
+describe("#jex.false(environment, expression, input, callback)", function() {
+  it("should fail", function(done) {
+    jex.false(null, null, "input", function(error, output) {
+      should(error).be.ok;
+      should(output).equal("input");
+      done();
+    });
+  });
+});
+
+describe("#jex.if(environment, expression, input, callback)", function() {
+  it("should evaluate then when condition succeeds", function(done) {
+    var expression = {
+      if: { true: null },
+        then: { add: 5 }
+    };
+
+    var environment = {
+      if: jex.if,
+      true: jex.true,
+      add: function(environment, expression, input, callback) {
+        return callback(null, input + expression.add);
+      }
+    };
+
+    jex(environment, expression, 1, function(error, output) {
+      should(error).not.be.ok;
+      should(output).equal(6);
+      done();
+    });
+  });
+
+  it("should not evaluate then when condition fails", function(done) {
+    var expression = {
+      if: { false: null },
+        then: { add: 5 }
+    };
+
+    var environment = {
+      if: jex.if,
+      false: jex.false,
+      add: function(environment, expression, input, callback) {
+        return callback(null, input + expression.add);
+      }
+    };
+
+    jex(environment, expression, 1, function(error, output) {
+      should(error).not.be.ok;
+      should(output).equal(1);
+      done();
+    });
+  });
+
+  it("should evaluate else when condition fails", function(done) {
+    var expression = {
+      if: { false: null },
+        then: { add: 5 },
+        else: { add: 2 }
+    };
+
+    var environment = {
+      if: jex.if,
+      false: jex.false,
+      add: function(environment, expression, input, callback) {
+        return callback(null, input + expression.add);
+      }
+    };
+
+    jex(environment, expression, 1, function(error, output) {
+      should(error).not.be.ok;
+      should(output).equal(3);
+      done();
+    });
+  });
+});
+
 describe("#jex.do(environment, expression, input, callback)", function() {
   it("should succeed when empty", function(done) {
     var expression = { do: [ ] };

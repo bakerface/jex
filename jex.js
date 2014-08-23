@@ -15,6 +15,30 @@
     return environment[operation](environment, expression, input, callback);
   };
 
+  jex.true = function(environment, expression, input, callback) {
+    return callback(null, input);
+  };
+
+  jex.false = function(environment, expression, input, callback) {
+    return callback({ }, input);
+  };
+
+  jex.if = function(environment, expression, input, callback) {
+    jex(environment, expression.if, input, function(error, output) {
+      if (error) {
+        if (expression.else) {
+          return jex(environment, expression.else, output, callback);
+        }
+        else {
+          return callback(null, output);
+        }
+      }
+      else {
+        return jex(environment, expression.then, output, callback);
+      }
+    });
+  };
+
   jex.do = function(environment, expression, input, callback) {
     var tasks = expression.do.slice(0);
 
@@ -26,15 +50,12 @@
         return jex(environment, tasks.shift(), output, next);
       }
       else if (expression.while) {
-        jex(environment, expression.while, output, function(error, result) {
-          if (error) {
-            return callback(null, result);
-          }
-          else {
-            tasks = expression.do.slice(0);
-            return next(null, result);
-          }
-        });
+        var statement = {
+          if: expression.while,
+            then: expression
+        };
+
+        return jex.if(environment, statement, output, callback);
       }
       else {
         return callback(error, output);

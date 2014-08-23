@@ -14,9 +14,21 @@
 }
 ```
 
-[#](#) **jex**(*environment, expression, input, callback*) - evaluate *expression* on *input* in *environment*
+[#](#jex) **jex**(*environment, expression, input, callback*) - evaluate *expression* on *input* in *environment*
 
-[#](#) jex.**do**(*environment, expression, input, callback*) - evaluate an ordered list of expressions
+[#](#jex-true) jex.**true**(*environment, expression, input, callback*) - callback with success
+
+
+[#](#jex-false) jex.**false**(*environment, expression, input, callback*) - callback with failure
+
+
+[#](#jex-if) jex.**if**(*environment, expression, input, callback*) - conditional expression evaluation
+
+* *expression.if* - the condition expression
+* *expression.then* - the expression to evaluate when the condition is met
+* *expression.else* - the expression to evaluate when the condition is not met (default: jex.[**true**](#jex-true))
+
+[#](#jex-do) jex.**do**(*environment, expression, input, callback*) - evaluate an ordered list of expressions
 
 * *expression.do* - the ordered list of expressions to evaluate
-* *expression.while* - the optional loop condition
+* *expression.while* - the repeat condition (default: jex.[**false**](#jex-false))
