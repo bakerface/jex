@@ -128,7 +128,7 @@ describe("#jex.do(environment, expression, input, callback)", function() {
         return callback(null, input / expression.divide);
       },
       lessThan: function(environment, expression, input, callback) {
-        return callback(!(input < expression.lessThan));
+        return callback(!(input < expression.lessThan), input);
       }
     };
 

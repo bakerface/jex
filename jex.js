@@ -26,13 +26,13 @@
         return jex(environment, tasks.shift(), output, next);
       }
       else if (expression.while) {
-        jex(environment, expression.while, output, function(error) {
+        jex(environment, expression.while, output, function(error, result) {
           if (error) {
-            return callback(null, output);
+            return callback(null, result);
           }
           else {
             tasks = expression.do.slice(0);
-            return next(null, output);
+            return next(null, result);
           }
         });
       }
