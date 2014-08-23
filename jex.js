@@ -23,6 +23,10 @@
     return callback({ }, input);
   };
 
+  jex.error = function(environment, expression, input, callback) {
+    return callback(expression.error, input);
+  };
+
   jex.if = function(environment, expression, input, callback) {
     jex(environment, expression.if, input, function(error, output) {
       if (error) {
@@ -30,7 +34,7 @@
           return jex(environment, expression.else, output, callback);
         }
         else {
-          return callback(null, output);
+          return jex.true(environment, { true: null }, output, callback);
         }
       }
       else {
@@ -44,21 +48,19 @@
 
     function next(error, output) {
       if (error) {
-        return callback(error, output);
+        return jex.error(environment, { error: error }, output, callback);
       }
       else if (tasks.length > 0) {
         return jex(environment, tasks.shift(), output, next);
       }
       else if (expression.while) {
-        var statement = {
+        return jex.if(environment, {
           if: expression.while,
             then: expression
-        };
-
-        return jex.if(environment, statement, output, callback);
+        }, output, callback);
       }
       else {
-        return callback(error, output);
+        return jex.true(environment, { true: null }, output, callback);
       }
     }
 

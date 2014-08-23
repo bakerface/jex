@@ -46,9 +46,19 @@ describe("#jex.true(environment, expression, input, callback)", function() {
 });
 
 describe("#jex.false(environment, expression, input, callback)", function() {
-  it("should fail", function(done) {
+  it("should fail with a generic error", function(done) {
     jex.false(null, null, "input", function(error, output) {
       should(error).be.ok;
+      should(output).equal("input");
+      done();
+    });
+  });
+});
+
+describe("#jex.error(environment, expression, input, callback)", function() {
+  it("should fail with the specified error", function(done) {
+    jex.error(null, { error: "error" }, "input", function(error, output) {
+      should(error).equal("error");
       should(output).equal("input");
       done();
     });
