@@ -30,7 +30,7 @@
 * *expression.then* - the expression to evaluate when the condition is met
 * *expression.else* - the expression to evaluate when the condition is not met (default: jex.[**true**](#jex-true))
 
-<a name="jex-do" href="#jex-do">#</a> jex.**do**(*environment, expression, input, callback*) - evaluate an ordered list of expressions
+<a name="jex-do" href="#jex-do">#</a> jex.**do**(*environment, expression, input, callback*) - repeat evaluation of an ordered list of expressions
 
 * *expression.do* - the ordered list of expressions to evaluate
 * *expression.while* - the repeat condition (default: jex.[**false**](#jex-false))
