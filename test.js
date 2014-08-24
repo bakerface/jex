@@ -49,7 +49,7 @@ describe("# jex(expression)", function() {
     var expression = { test: null };
     var environment = { test: test };
 
-    jex(environment, expression, null, function(error, output) {
+    jex(expression)(environment, null, function(error, output) {
 
     });
   });
@@ -66,7 +66,7 @@ describe("# jex(expression)", function() {
     var environment = { test: test };
     var input = { input: true };
 
-    jex(environment, expression, input, function(error, output) {
+    jex(expression)(environment, input, function(error, output) {
       should(error).eql({ error: "error" });
       should(output).eql({ output: true});
       done();
@@ -86,7 +86,7 @@ describe("# jex.error(error)", function() {
   it("should be exposed as a primitive function", function(done) {
     var expression = { error: "error" };
 
-    jex(test_environment, expression, 1, function(error, output) {
+    jex(expression)(test_environment, 1, function(error, output) {
       should(error).eql("error");
       should(output).equal(1);
       done();
@@ -106,7 +106,7 @@ describe("# jex.true", function() {
   it("should be exposed as a primitive function", function(done) {
     var expression = { true: null };
 
-    jex(test_environment, expression, "input", function(error, output) {
+    jex(expression)(test_environment, "input", function(error, output) {
       should(error).not.be.ok;
       should(output).equal("input");
       done();
@@ -126,7 +126,7 @@ describe("# jex.false", function() {
   it("should be exposed as a primitive function", function(done) {
     var expression = { false: null };
 
-    jex(test_environment, expression, "input", function(error, output) {
+    jex(expression)(test_environment, "input", function(error, output) {
       should(error).be.ok;
       should(output).equal("input");
       done();
@@ -165,7 +165,7 @@ describe("# jex.if(condition, success, failure)", function() {
         then: { add: 5 },
         else: { add: 2 } };
 
-    jex(test_environment, expression, 1, function(error, output) {
+    jex(expression)(test_environment, 1, function(error, output) {
       should(error).not.be.ok;
       should(output).equal(3);
       done();
@@ -215,7 +215,7 @@ describe("# jex.do(operations, condition)", function() {
             { divide: 2 } ],
         while: { less: 1000 } };
 
-    jex(test_environment, expression, 1, function(error, output) {
+    jex(expression)(test_environment, 1, function(error, output) {
       should(error).not.be.ok;
       should(output).equal(4525);
       done();
@@ -258,7 +258,7 @@ describe("# jex.while(condition, operations)", function() {
           { multiply: 10 },
           { divide: 2 } ] };
 
-    jex(test_environment, expression, 1, function(error, output) {
+    jex(expression)(test_environment, 1, function(error, output) {
       should(error).not.be.ok;
       should(output).equal(4525);
       done();
