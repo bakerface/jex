@@ -3,119 +3,86 @@
 (function() {
   var root = this;
   var previous = root.previous;
-  var default_environment = { };
-
-  var jex_operation = function(expression) {
-    for (var key in expression) {
-      return key;
-    }
-  };
-
-  var primitive_operation = function(operation) {
-    if (operation in default_environment) {
-      return function(environment, expression, input, callback) {
-        return default_environment[operation](expression)
-          (environment, input, callback);
-      };
-    }
-  };
 
   var jex = function(expression) {
-    var operation = jex_operation(expression);
+    return function(environment, input, success, failure) {
+      for (var operation in expression) {
+        var task = environment[operation] || jex[operation];
 
-    if (operation) {
-      return function(environment, input, callback) {
-        var method = environment[operation] || primitive_operation(operation);
-
-        if (method) {
-          return method(environment, expression, input, callback);
+        if (task) {
+          return task(environment, expression, input, success, failure);
         }
         else {
           throw new Error("Undefined Operation: " + operation);
         }
-      };
-    }
-  };
-
-  jex.error = function(error) {
-    return function(environment, input, callback) {
-      return callback(error, input);
-    };
-  };
-
-  default_environment.error = function(expression) {
-    return jex.error(expression.error);
-  };
-
-  jex.true = jex.error(false);
-
-  default_environment.true = function(expression) {
-    return jex.true;
-  };
-
-  jex.false = jex.error(true);
-
-  default_environment.false = function(expression) {
-    return jex.false;
-  };
-
-  jex.if = function(if_condition, then_operation, else_operation) {
-    else_operation = else_operation || jex.true;
-
-    return function(environment, input, callback) {
-      return if_condition(environment, input, function(error, output) {
-        return (error ? else_operation : then_operation)
-          (environment, output, callback);
-      });
-    };
-  };
-
-  default_environment.if = function(expression) {
-    return jex.if(
-      jex(expression.if),
-      jex(expression.then),
-      jex(expression.else));
-  };
-
-  jex.do = function(do_operations, while_condition) {
-    while_condition = while_condition || jex.false;
-
-    function run_operations(environment, input, callback) {
-      var tasks = do_operations.slice(0);
-
-      function next(error, output) {
-        if (error) {
-          return jex.error(error)(environment, output, callback);
-        }
-        else if (tasks.length > 0) {
-          return tasks.shift()(environment, output, next);
-        }
-        else {
-          return jex.if(while_condition, run_operations, jex.true)
-            (environment, output, callback);
-        }
       }
+    };
+  };
 
-      return next(null, input);
+  function truthy(environment, input, success, failure) {
+    return success(environment, input);
+  }
+
+  function falsy(environment, input, success, failure) {
+    return failure(environment, input);
+  }
+
+  function sequence(first, next) {
+    return function(environment, input, success, failure) {
+      return first(environment, input, sequence(next, success), failure);
+    };
+  }
+
+  function chain(tasks) {
+    return function(environment, input, success, failure) {
+      return tasks.reduce(sequence)(environment, input, success, failure);
+    };
+  }
+
+  function conditional(condition, when_success, when_failure) {
+    return function(environment, input, success, failure) {
+      return condition(environment, input,
+        function(environment, input) {
+          return when_success(environment, input, success, failure);
+        },
+        function(environment, input) {
+          return when_failure(environment, input, success, failure);
+        });
     }
+  }
 
-    return run_operations;
+  function conditional_loop(condition, loop) {
+    return function(environment, input, success, failure) {
+      var operation = conditional(condition,
+          sequence(loop, conditional_loop(condition, loop)),
+          truthy);
+
+      return operation(environment, input, success, failure);
+    };
+  }
+
+  jex.true = function(environment, expression, input, success, failure) {
+    return success(environment, input);
   };
 
-  default_environment.do = function(expression) {
-    return jex.do(
-      expression.do.map(jex),
-      jex(expression.while));
+  jex.false = function(environment, expression, input, success, failure) {
+    return failure(environment, input);
   };
 
-  jex.while = function(while_condition, do_operations) {
-    return jex.if(while_condition, jex.do(do_operations, while_condition));
+  jex.if = function(environment, expression, input, success, failure) {
+    var operation = conditional(jex(expression.if),
+      expression.then ? jex(expression.then) : truthy,
+      expression.else ? jex(expression.else) : truthy);
+
+    return operation(environment, input, success, failure);
   };
 
-  default_environment.while = function(expression) {
-    return jex.while(
+  jex.while = function(environment, expression, input, success, failure) {
+    var operation = conditional_loop(
       jex(expression.while),
-      expression.do.map(jex));
+      chain(expression.do.map(jex)));
+
+    return operation(environment, input, success, failure);
   };
 
   jex.conflict = function() {
