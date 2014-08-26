@@ -1,11 +1,6 @@
 var should = require("should");
 var jex = require("..");
-
-var environment = {
-  add: function(environment, expression, input, success, failure) {
-    success(environment, input + expression.add);
-  }
-};
+var environment = require("./TestEnvironment.js");
 
 describe("# { if: { }, then: { }, else: { } }", function() {
   it("should evaluate 'then' when condition is met", function(done) {

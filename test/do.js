@@ -2,25 +2,40 @@ var should = require("should");
 var jex = require("..");
 var environment = require("./TestEnvironment.js");
 
-describe("# { while: { }, do: [ ] }", function() {
-  it("should not evaluate if failure", function(done) {
+describe("# { do: [ ], while: { } }", function() {
+  it("should evaluate the tasks in the order specified", function(done) {
     var test = jex({
-      while: { false: null },
-      do: [ { add: 5 } ]
+      do: [
+        { add: 5 },
+        { multiply: 2 } ]
     });
 
     test(environment, 1, function(environment, output) {
-      should(output).equal(1);
+      should(output).equal(12);
+      done();
+    });
+  });
+
+  it("should evaluate the tasks at least once", function(done) {
+    var test = jex({
+      do: [
+        { add: 5 },
+        { multiply: 2 } ],
+      while: { false: null }
+    });
+
+    test(environment, 1, function(environment, output) {
+      should(output).equal(12);
       done();
     });
   });
 
   it("should evaluate tasks while successful", function(done) {
     var test = jex({
-      while: { less: 1000 },
       do: [
         { add: 5 },
-        { multiply: 2 } ]
+        { multiply: 2 } ],
+      while: { less: 1000 }
     });
 
     test(environment, 1, function(environment, output) {
@@ -31,11 +46,10 @@ describe("# { while: { }, do: [ ] }", function() {
 
   it("should fail if 'do' fails", function(done) {
     var test = jex({
-      while: { less: 1000 },
       do: [
         { add: 5 },
-        { false: null },
-        { multiply: 2 } ]
+        { false: 2 } ],
+      while: { less: 1000 }
     });
 
     test(environment, 1, null, function(environment, output) {

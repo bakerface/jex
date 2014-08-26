@@ -1,9 +1,9 @@
 var should = require("should");
 var jex = require("..");
+var environment = require("./TestEnvironment.js");
 
 describe("# { true: null }", function() {
   var test = jex({ true: null });
-  var environment = { };
 
   it("should succeed", function(done) {
     test(environment, "test", function(environment, output) {
