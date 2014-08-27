@@ -6,19 +6,19 @@
 
   function bubble(task, success, failure) {
     return function(environment, input) {
-      return task(environment, input, success, failure);
+      return environment.start(task, input, success, failure);
     };
   }
 
   function forward(task, input) {
     return function(environment, output, success, failure) {
-      return task(environment, input, success, failure);
+      return environment.start(task, input, success, failure);
     };
   }
 
   function sequence(first, second) {
     return function(environment, input, success, failure) {
-      return first(environment, input, bubble(second, success, failure), failure);
+      return environment.start(first, input, bubble(second, success, failure), failure);
     };
   }
 
@@ -28,7 +28,7 @@
 
   function if_then_else(if_task, then_task, else_task) {
     return function(environment, input, success, failure) {
-      return if_task(environment, input,
+      return environment.start(if_task, input,
           bubble(then_task, success, failure),
           bubble(else_task, success, failure));
     };
@@ -36,7 +36,7 @@
 
   function while_do(while_task, do_task) {
     return function(environment, input, success, failure) {
-      return while_task(environment, input,
+      return environment.start(while_task, input,
           bubble(sequence(do_task, while_do(while_task, do_task)), success, failure),
           success);
     };
@@ -46,22 +46,12 @@
     return sequence(do_task, while_do(while_task, do_task));
   }
 
-  function counter(task) {
-    var count = 0;
-
-    return function(environment, input, success, failure) {
-      return task(environment, count++,
-        forward(success, input),
-        forward(failure, input));
-    };
-  }
-
   function falsy(environment, input, success, failure) {
-    return failure(environment, input);
+    return environment.start(failure, input);
   }
 
   function truthy(environment, input, success, failure) {
-    return success(environment, input);
+    return environment.start(success, input);
   }
 
   function jex_operation(expression) {
@@ -110,10 +100,6 @@
   jex.do = function(expression) {
     return do_while(chain(expression.do.map(jex)),
       expression.while ? jex(expression.while) : falsy);
-  };
-
-  jex.counter = function(expression) {
-    return counter(jex(expression.counter));
   };
 
   jex.conflict = function() {

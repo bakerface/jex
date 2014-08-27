@@ -6,25 +6,26 @@
   var TestEnvironment = { };
 
   TestEnvironment.add = function(environment, expression, input, success, failure) {
-    return success(environment, input + expression.add);
+    return environment.start(success, input + expression.add);
   };
 
   TestEnvironment.multiply = function(environment, expression, input, success, failure) {
-    return success(environment, input * expression.multiply);
+    return environment.start(success, input * expression.multiply);
   };
 
   TestEnvironment.less = function(environment, expression, input, success, failure) {
     if (input < expression.less) {
-      return success(environment, input);
+      return environment.start(success, input);
     }
     else {
-      return failure(environment, input);
+      return environment.start(failure, input);
     }
   };
 
-  TestEnvironment.log = function(environment, expression, input, success, failure) {
-    console.log(expression.log);
-    return success(environment, input);
+  TestEnvironment.start = function(task, input, success, failure) {
+    return setTimeout(function() {
+      return task(TestEnvironment, input, success, failure);
+    }, 0);
   };
 
   TestEnvironment.conflict = function() {
