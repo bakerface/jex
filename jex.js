@@ -10,7 +10,7 @@
       var task = this[operation] || primitives[operation];
 
       if (task) {
-        return task.bind(this)(expression);
+        return jex.delay(task.bind(this)(expression), 0);
       }
       else {
         return jex.undefinedOperation(operation);
@@ -28,6 +28,12 @@
     return jex.error({
       kind: "jex-undefined-operation",
       operation: operation
+    });
+  };
+
+  jex.operationTimeout = function() {
+    return jex.error({
+      kind: "jex-operation-timeout"
     });
   };
 
@@ -53,6 +59,18 @@
     return jex.false();
   };
 
+  jex.delay = function(task, milliseconds) {
+    return function(callback) {
+      setTimeout(function() {
+        task(callback);
+      }, milliseconds);
+    };
+  };
+
+  primitives.delay = function(expression) {
+    return jex.delay(this.jex(expression.delay), expression.milliseconds);
+  };
+
   jex.if = function(_if, _then, _else) {
     return function(callback) {
       _if(function(error) {
@@ -64,8 +82,8 @@
 
   primitives.if = function(expression) {
     return jex.if(this.jex(expression.if),
-      this.jex(expression.then),
-      this.jex(expression.else));
+      expression.then ? this.jex(expression.then) : jex.true(),
+      expression.else ? this.jex(expression.else) : jex.true());
   };
 
   jex.sequence = function(first, second) {
@@ -102,6 +120,41 @@
   primitives.do = function(expression) {
     return jex.do(jex.chain(expression.do.map(this.jex)),
       expression.while ? this.jex(expression.while) : jex.false());
+  };
+
+  jex.timeout = function(task, milliseconds) {
+    return function(callback) {
+      var timer;
+
+      function end() {
+        if (timer) {
+          clearTimeout(timer);
+          timer = null;
+          return true;
+        }
+
+        return false;
+      }
+
+      function expired() {
+        if (end()) {
+          jex.operationTimeout()(callback);
+        }
+      }
+
+      function completed(error) {
+        if (end()) {
+          jex.error(error)(callback);
+        }
+      }
+
+      timer = setTimeout(expired, milliseconds);
+      return task(completed);
+    };
+  };
+
+  primitives.timeout = function(expression) {
+    return jex.timeout(this.jex(expression.timeout), expression.milliseconds);
   };
 
   jex.conflict = function() {

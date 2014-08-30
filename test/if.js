@@ -36,4 +36,28 @@ describe("jex.if(if, then, else)", function() {
       done();
     });
   });
+
+  it("should succeed if 'then' is undefined and condition is met", function(done) {
+    var task = calculator.jex({
+      if: { true: null }
+    });
+
+    task(function(error) {
+      should(error).not.be.ok;
+      calculator.answer.should.equal(1);
+      done();
+    });
+  });
+
+  it("should succeed if 'else' is undefined and condition is not met", function(done) {
+    var task = calculator.jex({
+      if: { false: null }
+    });
+
+    task(function(error) {
+      should(error).not.be.ok;
+      calculator.answer.should.equal(1);
+      done();
+    });
+  });
 });
