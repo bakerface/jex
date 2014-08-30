@@ -122,7 +122,7 @@
       expression.while ? this.jex(expression.while) : jex.false());
   };
 
-  jex.timeout = function(task, milliseconds) {
+  jex.withTimeout = function(task, milliseconds) {
     return function(callback) {
       var timer;
 
@@ -153,8 +153,8 @@
     };
   };
 
-  primitives.timeout = function(expression) {
-    return jex.timeout(this.jex(expression.timeout), expression.milliseconds);
+  primitives.withTimeout = function(expression) {
+    return jex.withTimeout(this.jex(expression.withTimeout), expression.milliseconds);
   };
 
   jex.conflict = function() {

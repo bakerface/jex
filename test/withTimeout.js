@@ -2,7 +2,7 @@ var should = require("should");
 var jex = require("..");
 var Calculator = require("./Calculator.js");
 
-describe("jex.timeout(task, milliseconds)", function() {
+describe("jex.withTimeout(task, timeout)", function() {
   var calculator;
 
   beforeEach(function() {
@@ -11,7 +11,7 @@ describe("jex.timeout(task, milliseconds)", function() {
 
   it("should succeed if task succeeds before the timeout", function(done) {
     var task = calculator.jex({
-      timeout: {
+      withTimeout: {
         do: [
           { delay: 10 },
           { add: 2 }
@@ -29,7 +29,7 @@ describe("jex.timeout(task, milliseconds)", function() {
 
   it("should fail if task fails before the timeout", function(done) {
     var task = calculator.jex({
-      timeout: {
+      withTimeout: {
         do: [
           { delay: 10 },
           { error: "error" }
@@ -47,7 +47,7 @@ describe("jex.timeout(task, milliseconds)", function() {
 
   it("should fail if task succeeds after the timeout", function(done) {
     var task = calculator.jex({
-      timeout: {
+      withTimeout: {
         do: [
           { delay: 1000 },
           { add: 2 }
@@ -65,7 +65,7 @@ describe("jex.timeout(task, milliseconds)", function() {
 
   it("should fail if task fails after the timeout", function(done) {
     var task = calculator.jex({
-      timeout: {
+      withTimeout: {
         do: [
           { delay: 1000 },
           { error: "error" }
