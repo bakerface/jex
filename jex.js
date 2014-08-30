@@ -10,7 +10,7 @@
       var task = this[operation] || primitives[operation];
 
       if (task) {
-        return task.bind(this)(expression);
+        return jex.sequence(jex.delay(0), task.bind(this)(expression));
       }
       else {
         return jex.undefinedOperation(operation);
