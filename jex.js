@@ -3,10 +3,11 @@
 (function() {
   var root = this;
   var previous = root.jex;
+  var primitives = { };
 
   var jex = root.jex = function(expression) {
     for (var operation in expression) {
-      var task = this[operation] || jex.primitives[operation];
+      var task = this[operation] || primitives[operation];
 
       if (task) {
         return task.bind(this)(expression);
@@ -16,8 +17,6 @@
       }
     }
   };
-
-  jex.primitives = { };
 
   jex.error = function(error) {
     return function(callback) {
@@ -32,7 +31,7 @@
     });
   };
 
-  jex.primitives.error = function(expression) {
+  primitives.error = function(expression) {
     return jex.error(expression.error);
   };
 
@@ -42,7 +41,7 @@
     };
   };
 
-  jex.primitives.true = function(expression) {
+  primitives.true = function(expression) {
     return jex.true();
   };
 
@@ -50,7 +49,7 @@
     return jex.error({ kind: "jex-false" });
   };
 
-  jex.primitives.false = function(expression) {
+  primitives.false = function(expression) {
     return jex.false();
   };
 
@@ -63,7 +62,7 @@
     };
   };
 
-  jex.primitives.if = function(expression) {
+  primitives.if = function(expression) {
     return jex.if(this.jex(expression.if),
       this.jex(expression.then),
       this.jex(expression.else));
@@ -91,7 +90,7 @@
     return step;
   };
 
-  jex.primitives.while = function(expression) {
+  primitives.while = function(expression) {
     return jex.while(this.jex(expression.while),
       jex.chain(expression.do.map(this.jex)));
   };
@@ -100,7 +99,7 @@
     return jex.sequence(_do, jex.while(_while, _do));
   };
 
-  jex.primitives.do = function(expression) {
+  primitives.do = function(expression) {
     return jex.do(jex.chain(expression.do.map(this.jex)),
       expression.while ? this.jex(expression.while) : jex.false());
   };
