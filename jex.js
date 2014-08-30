@@ -122,6 +122,29 @@
       expression.while ? this.jex(expression.while) : jex.false());
   };
 
+  jex.parallel = function(tasks) {
+    return function(callback) {
+      var count = 0;
+      var result = null;
+
+      function next(error) {
+        result = result || error;
+
+        if (++count == tasks.length) {
+          return callback(result);
+        }
+      }
+
+      tasks.forEach(function(task) {
+        return task(next);
+      });
+    };
+  };
+
+  primitives.parallel = function(expression) {
+    return jex.parallel(expression.parallel.map(this.jex));
+  };
+
   jex.withTimeout = function(task, milliseconds) {
     return function(callback) {
       var timer;
