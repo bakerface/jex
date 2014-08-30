@@ -10,7 +10,7 @@
       var task = this[operation] || primitives[operation];
 
       if (task) {
-        return jex.delay(task.bind(this)(expression), 0);
+        return task.bind(this)(expression);
       }
       else {
         return jex.undefinedOperation(operation);
@@ -59,16 +59,16 @@
     return jex.false();
   };
 
-  jex.delay = function(task, milliseconds) {
+  jex.delay = function(milliseconds) {
     return function(callback) {
       setTimeout(function() {
-        task(callback);
+        return callback();
       }, milliseconds);
     };
   };
 
   primitives.delay = function(expression) {
-    return jex.delay(this.jex(expression.delay), expression.milliseconds);
+    return jex.delay(expression.delay);
   };
 
   jex.if = function(_if, _then, _else) {

@@ -12,8 +12,10 @@ describe("jex.timeout(task, milliseconds)", function() {
   it("should succeed if task succeeds before the timeout", function(done) {
     var task = calculator.jex({
       timeout: {
-        delay: { add: 2 },
-        milliseconds: 10
+        do: [
+          { delay: 10 },
+          { add: 2 }
+        ]
       },
       milliseconds: 20
     });
@@ -28,8 +30,10 @@ describe("jex.timeout(task, milliseconds)", function() {
   it("should fail if task fails before the timeout", function(done) {
     var task = calculator.jex({
       timeout: {
-        delay: { error: "error" },
-        milliseconds: 10
+        do: [
+          { delay: 10 },
+          { error: "error" }
+        ]
       },
       milliseconds: 20
     });
@@ -44,8 +48,10 @@ describe("jex.timeout(task, milliseconds)", function() {
   it("should fail if task succeeds after the timeout", function(done) {
     var task = calculator.jex({
       timeout: {
-        delay: { add: 2 },
-        milliseconds: 1000
+        do: [
+          { delay: 1000 },
+          { add: 2 }
+        ]
       },
       milliseconds: 20
     });
@@ -60,8 +66,10 @@ describe("jex.timeout(task, milliseconds)", function() {
   it("should fail if task fails after the timeout", function(done) {
     var task = calculator.jex({
       timeout: {
-        delay: { error: "error" },
-        milliseconds: 1000
+        do: [
+          { delay: 1000 },
+          { error: "error" }
+        ]
       },
       milliseconds: 20
     });
