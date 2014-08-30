@@ -1,13 +1,19 @@
 var should = require("should");
 var jex = require("..");
-var environment = require("./TestEnvironment.js");
+var Calculator = require("./Calculator.js");
 
-describe("# { false: null }", function() {
-  var test = jex({ false: null });
+describe("jex.false()", function() {
+  var calculator;
 
-  it("should fail", function(done) {
-    test(environment, "test", null, function(environment, output) {
-      should(output).equal("test");
+  beforeEach(function() {
+    calculator = new Calculator(1);
+  });
+
+  it("should return with error", function(done) {
+    var task = calculator.jex({ false: null });
+
+    task(function(error) {
+      should(error).eql({ kind: "jex-false" });
       done();
     });
   });

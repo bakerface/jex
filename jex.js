@@ -2,110 +2,119 @@
 
 (function() {
   var root = this;
-  var previous = root.previous;
+  var previous = root.jex;
 
-  function bubble(task, success, failure) {
-    return function(environment, input) {
-      return environment.start(task, input, success, failure);
-    };
-  }
-
-  function forward(task, input) {
-    return function(environment, output, success, failure) {
-      return environment.start(task, input, success, failure);
-    };
-  }
-
-  function sequence(first, second) {
-    return function(environment, input, success, failure) {
-      return environment.start(first, input, bubble(second, success, failure), failure);
-    };
-  }
-
-  function chain(tasks) {
-    return tasks.reduce(sequence);
-  }
-
-  function if_then_else(if_task, then_task, else_task) {
-    return function(environment, input, success, failure) {
-      return environment.start(if_task, input,
-          bubble(then_task, success, failure),
-          bubble(else_task, success, failure));
-    };
-  }
-
-  function while_do(while_task, do_task) {
-    return function(environment, input, success, failure) {
-      return environment.start(while_task, input,
-          bubble(sequence(do_task, while_do(while_task, do_task)), success, failure),
-          success);
-    };
-  }
-
-  function do_while(do_task, while_task) {
-    return sequence(do_task, while_do(while_task, do_task));
-  }
-
-  function falsy(environment, input, success, failure) {
-    return environment.start(failure, input);
-  }
-
-  function truthy(environment, input, success, failure) {
-    return environment.start(success, input);
-  }
-
-  function jex_operation(expression) {
+  var jex = root.jex = function(expression) {
     for (var operation in expression) {
-      return operation;
+      var task = this[operation] || jex.primitives[operation];
+
+      if (task) {
+        return task.bind(this)(expression);
+      }
+      else {
+        return jex.undefinedOperation(operation);
+      }
     }
-  }
+  };
 
-  function jex(expression) {
-    var operation = jex_operation(expression);
+  jex.primitives = { };
 
-    if (operation in jex) {
-      return jex[operation](expression);
+  jex.error = function(error) {
+    return function(callback) {
+      return callback(error);
+    };
+  };
+
+  jex.undefinedOperation = function(operation) {
+    return jex.error({
+      kind: "jex-undefined-operation",
+      operation: operation
+    });
+  };
+
+  jex.primitives.error = function(expression) {
+    return jex.error(expression.error);
+  };
+
+  jex.true = function() {
+    return function(callback) {
+      return callback();
+    };
+  };
+
+  jex.primitives.true = function(expression) {
+    return jex.true();
+  };
+
+  jex.false = function() {
+    return jex.error({ kind: "jex-false" });
+  };
+
+  jex.primitives.false = function(expression) {
+    return jex.false();
+  };
+
+  jex.if = function(_if, _then, _else) {
+    return function(callback) {
+      _if(function(error) {
+        if (error) return _else(callback);
+        else return _then(callback);
+      });
+    };
+  };
+
+  jex.primitives.if = function(expression) {
+    return jex.if(this.jex(expression.if),
+      this.jex(expression.then),
+      this.jex(expression.else));
+  };
+
+  jex.sequence = function(first, second) {
+    return function(callback) {
+      first(function(error) {
+        if (error) return callback(error);
+        else return second(callback);
+      });
+    };
+  };
+
+  jex.chain = function(tasks) {
+    return tasks.reduce(jex.sequence);
+  };
+
+  jex.while = function(_while, _do) {
+    function step(callback) {
+      var task = jex.if(_while, jex.sequence(_do, step), jex.true());
+      task(callback);
     }
-    else {
-      return function(environment, input, success, failure) {
-        if (operation in environment) {
-          return environment[operation](environment, expression, input, success, failure);
-        }
-        else {
-          throw new Error("Undefined Operation: " + operation);
-        }
-      };
-    }
-  }
 
-  jex.true = function(expression) {
-    return truthy;
+    return step;
   };
 
-  jex.false = function(expression) {
-    return falsy;
+  jex.primitives.while = function(expression) {
+    return jex.while(this.jex(expression.while),
+      jex.chain(expression.do.map(this.jex)));
   };
 
-  jex.if = function(expression) {
-    return if_then_else(jex(expression.if),
-      expression.then ? jex(expression.then) : truthy,
-      expression.else ? jex(expression.else) : truthy);
+  jex.do = function(_do, _while) {
+    return jex.sequence(_do, jex.while(_while, _do));
   };
 
-  jex.while = function(expression) {
-    return while_do(jex(expression.while),
-      chain(expression.do.map(jex)));
-  };
-
-  jex.do = function(expression) {
-    return do_while(chain(expression.do.map(jex)),
-      expression.while ? jex(expression.while) : falsy);
+  jex.primitives.do = function(expression) {
+    return jex.do(jex.chain(expression.do.map(this.jex)),
+      expression.while ? this.jex(expression.while) : jex.false());
   };
 
   jex.conflict = function() {
     root.jex = previous;
     return jex;
   };
+
+  Object.defineProperty(Object.prototype, "jex", {
+    set: function() { },
+    get: function() { return jex.bind(this); },
+    configurable: true
+  });
 
   if (typeof(exports) !== "undefined") {
     if (typeof(module) !== "undefined") {
@@ -117,5 +126,4 @@
   else {
     root.jex = jex;
   }
-
 }).call(this);

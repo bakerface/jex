@@ -1,59 +1,57 @@
 var should = require("should");
 var jex = require("..");
-var environment = require("./TestEnvironment.js");
+var Calculator = require("./Calculator.js");
 
-describe("# { do: [ ], while: { } }", function() {
-  it("should evaluate the tasks in the order specified", function(done) {
-    var test = jex({
+describe("jex.do(do, while)", function() {
+  var calculator;
+
+  beforeEach(function() {
+    calculator = new Calculator(1);
+  });
+
+  it("should repeat 'do' while condition is met", function(done) {
+    var task = calculator.jex({
       do: [
-        { add: 5 },
-        { multiply: 2 } ]
+        { add: 1 },
+        { multiply: 2 }
+      ],
+      while: { less: 100 }
     });
 
-    test(environment, 1, function(environment, output) {
-      should(output).equal(12);
+    task(function(error) {
+      should(error).not.be.ok;
+      calculator.answer.should.equal(190);
       done();
     });
   });
 
-  it("should evaluate the tasks at least once", function(done) {
-    var test = jex({
+  it("should evaluate 'do' once if condition is never met", function(done) {
+    var task = calculator.jex({
       do: [
-        { add: 5 },
-        { multiply: 2 } ],
+        { add: 1 },
+        { multiply: 2 }
+      ],
       while: { false: null }
     });
 
-    test(environment, 1, function(environment, output) {
-      should(output).equal(12);
+    task(function(error) {
+      should(error).not.be.ok;
+      calculator.answer.should.equal(4);
       done();
     });
   });
 
-  it("should evaluate tasks while successful", function(done) {
-    var test = jex({
+  it("should evaluate 'do' once if condition is undefined", function(done) {
+    var task = calculator.jex({
       do: [
-        { add: 5 },
-        { multiply: 2 } ],
-      while: { less: 1000 }
+        { add: 1 },
+        { multiply: 2 }
+      ]
     });
 
-    test(environment, 1, function(environment, output) {
-      should(output).equal(1398);
-      done();
-    });
-  });
-
-  it("should fail if 'do' fails", function(done) {
-    var test = jex({
-      do: [
-        { add: 5 },
-        { false: 2 } ],
-      while: { less: 1000 }
-    });
-
-    test(environment, 1, null, function(environment, output) {
-      should(output).equal(6);
+    task(function(error) {
+      should(error).not.be.ok;
+      calculator.answer.should.equal(4);
       done();
     });
   });
